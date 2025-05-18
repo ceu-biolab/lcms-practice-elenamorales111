@@ -1,9 +1,10 @@
 package lipid;
 
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import adduct.Adduct;
+import adduct.AdductList;
+
+import java.sql.SQLOutput;
+import java.util.*;
 
 /**
  * Class to represent the annotation over a lipid
@@ -19,6 +20,7 @@ public class Annotation {
     private final Set<Peak> groupedSignals;
     private int score;
     private int totalScoresApplied;
+    private static double PPMTOLERANCE=0.01;
 
 
     /**
@@ -50,6 +52,8 @@ public class Annotation {
         this.groupedSignals = new TreeSet<>(groupedSignals);
         this.score = 0;
         this.totalScoresApplied = 0;
+
+        this.adduct = detectAdduct(this.groupedSignals, this.PPMTOLERANCE);
     }
 
     public Lipid getLipid() {
@@ -124,9 +128,57 @@ public class Annotation {
 
     @Override
     public String toString() {
+        /* return String.format("Annotation(%s, mz=%.4f, RT=%.2f, adduct=%s, intensity=%.1f, score=%d)",
+                lipid.getName(), mz, rtMin, adduct, intensity, score); */
         return String.format("Annotation(%s, mz=%.4f, RT=%.2f, adduct=%s, intensity=%.1f, score=%d)",
-                lipid.getName(), mz, rtMin, adduct, intensity, score);
+                lipid, mz, rtMin, adduct, intensity, score);			
     }
 
+
     // !!TODO Detect the adduct with an algorithm or with drools, up to the user.
+    /**
+     * Detects the adduct that corresponds to a set of peaks
+     *
+     * @param peaks Set of experimental peaks
+     * @param theoreticalMass Monoisotopic mass of the lipid
+     * @param ppmTolerance Error margin that can occur in ppm
+     * @return the adduct string if the error margin is valid, if not then null is returned
+     */
+    public static String detectAdduct(Set<Peak> peaks, double ppmTolerance) {
+
+
+        Map<String, Double> allAdducts = new LinkedHashMap<>();
+        allAdducts.putAll(AdductList.MAPMZPOSITIVEADDUCTS);
+        allAdducts.putAll(AdductList.MAPMZNEGATIVEADDUCTS);
+
+        for (Peak peak : peaks) {
+            double mz = peak.getMz();
+            //System.out.println("Mz of peak: "+mz);
+
+
+            for (Map.Entry<String, Double> entry : allAdducts.entrySet()) {
+                String adduct = entry.getKey();
+                //System.out.println("Adduct of the table: "+adduct + " " + entry.getValue());
+
+                double expectedMz = Adduct.getMonoisotopicMassFromMZ(mz, adduct);
+                //System.out.println("Expected MZ: "+expectedMz);
+
+                double ppm = mz - expectedMz - Math.abs(entry.getValue());
+                //System.out.println("ppm: "+ppm);
+
+                if (ppm <= ppmTolerance) {
+
+                    //System.out.println("Detected adduct: "+adduct);
+                    return adduct;
+                }
+            }
+        }
+
+        return null;
+    }
+
 }
+
+
+
+
