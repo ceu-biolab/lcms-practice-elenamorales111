@@ -13,6 +13,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
+
+
 public class ElutionOrderTest {
 
 
@@ -24,6 +27,7 @@ public class ElutionOrderTest {
     @Before
     public void setup() {
         // !! TODO Empty by now,you can create common objects for all tests.
+
     }
 
 
@@ -34,7 +38,9 @@ public class ElutionOrderTest {
     @Test
     public void score1BasedOnRTCarbonNumbers() {
         // Assume lipids already annotated
+
         LOG.info("Creating RuleUnit");
+
         LipidScoreUnit lipidScoreUnit = new LipidScoreUnit();
 
         RuleUnitInstance<LipidScoreUnit> instance = RuleUnitProvider.get().createRuleUnitInstance(lipidScoreUnit);
@@ -78,10 +84,12 @@ public class ElutionOrderTest {
     @Test
     public void score1BasedOnRTDoubleBonds() {
         // Assume lipids already annotated
+
         LOG.info("Creating RuleUnit");
         LipidScoreUnit lipidScoreUnit = new LipidScoreUnit();
 
         RuleUnitInstance<LipidScoreUnit> instance = RuleUnitProvider.get().createRuleUnitInstance(lipidScoreUnit);
+
 
         // TODO CHECK THE Monoisotopic MASSES OF THE COMPOUNDS IN https://chemcalc.org/
 
@@ -93,6 +101,7 @@ public class ElutionOrderTest {
         Annotation annotation3 = new Annotation(lipid3, 887.80622, 10E5, 11d, IoniationMode.POSITIVE);
 
         LOG.info("Insert data");
+
 
         try {
             lipidScoreUnit.getAnnotations().add(annotation1);
@@ -112,6 +121,7 @@ public class ElutionOrderTest {
         finally {
             instance.close();
         }
+
     }
 
     /**
@@ -130,12 +140,12 @@ public class ElutionOrderTest {
 
         // TODO CHECK THE Monoisotopic MASSES OF THE COMPOUNDS IN https://chemcalc.org/
 
-        Lipid lipid1 = new Lipid(1, "PI 34:0", "C43H83O13P", "PI", 54, 0); // MZ of [M+H]+ = 839.56441
-        Lipid lipid2 = new Lipid(2, "PG 34:0", "C40H79O10P", "PG", 54, 0); // MZ of [M+H]+ = 751.54836
-        Lipid lipid3 = new Lipid(3, "PC 34:0", "C42H84NO8P", "PC", 54, 0); // MZ of [M+H]+ = 762.60073
+        Lipid lipid1 = new Lipid(1, "PI 34:0", "C43H83O13P", "PI", 34, 0); // MZ of [M+H]+ = 839.56441
+        Lipid lipid2 = new Lipid(2, "PG 34:0", "C40H79O10P", "PG", 34, 0); // MZ of [M+H]+ = 751.54836
+        Lipid lipid3 = new Lipid(3, "PC 34:0", "C42H84NO8P", "PC", 34, 0); // MZ of [M+H]+ = 762.60073
         Annotation annotation1 = new Annotation(lipid1, 839.5644179056, 10E6, 10d, IoniationMode.POSITIVE);
         Annotation annotation2 = new Annotation(lipid2, 751.54836, 10E7, 9d, IoniationMode.POSITIVE);
-        Annotation annotation3 = new Annotation(lipid3, 913.822, 10E5, 11d, IoniationMode.POSITIVE);
+        Annotation annotation3 = new Annotation(lipid3, 762.60073, 10E5, 11d, IoniationMode.POSITIVE);
 
         LOG.info("Insert data");
 
@@ -176,12 +186,12 @@ public class ElutionOrderTest {
 
         // TODO CHECK THE Monoisotopic MASSES OF THE COMPOUNDS IN https://chemcalc.org/
 
-        Lipid lipid1 = new Lipid(1, "PI 34:0", "C43H83O13P", "PI", 54, 0); // MZ of [M+H]+ = 839.56441
-        Lipid lipid2 = new Lipid(2, "PG 34:0", "C40H79O10P", "PG", 54, 0); // MZ of [M+H]+ = 751.54836
-        Lipid lipid3 = new Lipid(3, "PC 34:0", "C42H84NO8P", "PC", 54, 0); // MZ of [M+H]+ = 762.60073
+        Lipid lipid1 = new Lipid(1, "PI 34:0", "C43H83O13P", "PI", 34, 0); // MZ of [M+H]+ = 839.56441
+        Lipid lipid2 = new Lipid(2, "PG 34:0", "C40H79O10P", "PG", 34, 0); // MZ of [M+H]+ = 751.54836
+        Lipid lipid3 = new Lipid(3, "PC 34:0", "C42H84NO8P", "PC", 34, 0); // MZ of [M+H]+ = 762.60073
         Annotation annotation1 = new Annotation(lipid1, 839.5644179056, 10E6, 10d, IoniationMode.POSITIVE);
         Annotation annotation2 = new Annotation(lipid2, 751.54836, 10E7, 9d, IoniationMode.POSITIVE);
-        Annotation annotation3 = new Annotation(lipid3, 913.822, 10E5, 8d, IoniationMode.POSITIVE);
+        Annotation annotation3 = new Annotation(lipid3, 762.60073, 10E5, 8d, IoniationMode.POSITIVE);
 
         LOG.info("Insert data");
 
@@ -294,6 +304,4 @@ public class ElutionOrderTest {
         }
 
     }
-
-
 }

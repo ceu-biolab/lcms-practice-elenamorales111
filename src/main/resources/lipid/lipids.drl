@@ -1,8 +1,19 @@
 
-package lipid;
+package lipid
 
-unit LipidScoreUnit;
+unit LipidScoreUnit
 
+rule "Sanity check rule"
+when
+    $a1 : /annotations 
+    $a2 : /annotations [this != $a1]
+
+then
+    //System.out.println(" Regla cargada correctamente " + $a1 + " and " + $a2);
+	System.out.println(" Regla cargada correctamente");
+end
+
+	
 // TODO Include here rules and queries to fulfill the practice requirements
 
 
@@ -12,9 +23,9 @@ unit LipidScoreUnit;
 // !! TODO
 rule "Score 1 for lipid pair with increasing RT and carbon count"
 when
-    $a1 : /annotations [$rt1 : rtMin, $carbonCount1 : lipid.getCarbonCount(), $doubleBondCount : lipid.getDoubleBondsCount()]
+    $a1 : /annotations [$rt1 : rtMin, $carbonCount1 : lipid.getCarbonCount(), $doubleBondCount : lipid.getDoubleBondsCount(), $lipidType : lipid.getLipidType()]
     $a2 : /annotations [this!= $a1, lipid.getDoubleBondsCount() == $doubleBondCount,
-    rtMin > $rt1, lipid.getCarbonCount() > $carbonCount1]
+    rtMin > $rt1, lipid.getCarbonCount() > $carbonCount1, lipid.getLipidType() == $lipidType]
 then
     // in this case, the only change is the addition of the score, but the fact does not change so we do not break the principle of refractoriness
     $a1.addScore(1);
@@ -23,5 +34,89 @@ then
     System.out.println("Scored 1 for annotations: " + $a1 + " and " + $a2);
 end
 
-
 // !! TODO NEXT RULE: Negative evidence. If the RT follows the opposite order than the previous one, then the addScore should be -1.
+rule "Score -1 for lipid pair with increasing RT and carbon count"
+when
+    $a1 : /annotations [$rt1 : rtMin, $carbonCount1 : lipid.getCarbonCount(), $doubleBondCount1 : lipid.getDoubleBondsCount(), $lipidType : lipid.getLipidType()]
+    $a2 : /annotations [this!= $a1, lipid.getDoubleBondsCount() == $doubleBondCount1, rtMin > $rt1, lipid.getCarbonCount() <= $carbonCount1, lipid.getLipidType() == $lipidType]
+then
+    // in this case, the only change is the substraction of the score, but the fact does not change so we do not break the principle of refractoriness
+    $a1.addScore(-1);
+    $a2.addScore(-1);
+    // !! TODO ONLY FOR DEBUGGING
+    System.out.println("Scored -1 for annotations: " + $a1 + " and " + $a2);
+end
+
+rule "Score based on double bonds order"
+when
+    $a1 : /annotations [$doubleBondCount : lipid.getDoubleBondsCount()]
+    $a2 : /annotations [this != $a1, $doubleBondCount > lipid.getDoubleBondsCount()]
+then
+    $a1.addScore(1);
+    $a2.addScore(1);
+    // !! TODO ONLY FOR DEBUGGING
+    System.out.println("Score based on double bonds order: Scored 1 for annotations: " + $a1 + " and " + $a2);
+end
+
+/**
+ * !!TODO Test to check the elution order of the lipids. The elution order is based on the number of double bonds if the lipid type and the number of
+ * carbons is the same. The higher the number of double bonds, the shorter the RT.
+ * The RT order of lipids with the same number of carbons and double bonds is the same
+ * -> PG < PE < PI < PA < PS << PC.
+ 
+ */
+rule "Score based on lipid type order"
+when
+    $a1 : /annotations [$lipidType : lipid.getLipidType(), $carbonCount : lipid.getCarbonCount(), $doubleBondCount : lipid.getDoubleBondsCount(), $rt1 : rtMin]
+    $a2 : /annotations [this != $a1, lipid.getCarbonCount() == $carbonCount && lipid.getDoubleBondsCount() == $doubleBondCount && $lipidType != lipid.getLipidType() &&
+	($lipidType == "PG" && $rt1 < rtMin) ||  
+	(lipid.getLipidType() == "PG" && $rt1 > rtMin) ||
+	($lipidType == "PI" && $rt1 < rtMin) ||  
+	(lipid.getLipidType() == "PI" && $rt1 > rtMin)
+	]
+then
+    $a1.addScore(1);
+    $a2.addScore(1);
+    // !! TODO ONLY FOR DEBUGGING
+    System.out.println("Score based on lipid type order: Scored 1 for annotations: " + $a1 + " and " + $a2);
+end
+
+// !! TODO. PART II OF THE PRACTICE. The negative evidence.
+ /**
+  * !!TODO Test to check the elution order of the lipids. The elution order is based on the number of double bonds if the lipid type and the number of
+  * carbons is the same. The higher the number of double bonds, the shorter the RT.
+  * The RT order of lipids with the same number of carbons and double bonds is the same
+  * -> PG < PE < PI < PA < PS << PC.
+  */
+rule "Negative score based on lipid type order"
+when
+    $a1 : /annotations [$lipidType : lipid.getLipidType(), $carbonCount : lipid.getCarbonCount(), $doubleBondCount : lipid.getDoubleBondsCount(), $rt1 : rtMin]
+    $a2 : /annotations [this != $a1, lipid.getCarbonCount() == $carbonCount && lipid.getDoubleBondsCount() == $doubleBondCount && $lipidType != lipid.getLipidType() &&
+	($lipidType == "PG" && $rt1 > rtMin) ||  
+	(lipid.getLipidType() == "PG" && $rt1 < rtMin) ||
+	($lipidType == "PI" && $rt1 > rtMin) ||  
+	(lipid.getLipidType() == "PI" && $rt1 < rtMin)
+	]
+then
+    $a1.addScore(-1);
+    $a2.addScore(-1);
+    // !! TODO ONLY FOR DEBUGGING
+    System.out.println("Score based on lipid type order: Scored -1 for annotations: " + $a1 + " and " + $a2);
+end
+
+/**
+ * !!TODO Test to check the elution order of the lipids. The elution order is based on the number of double bonds if the lipid type and the number of
+ * carbons is the same. The higher the number of double bonds, the shorter the RT.
+ */
+ /*
+rule "Negative score based on double bonds order"
+when
+    $a1 : /annotations [$doubleBondCount : lipid.getDoubleBondsCount()]
+    $a2 : /annotations [this != $a1, $doubleBondCount < lipid.getDoubleBondsCount()]
+then
+    $a1.addScore(-1);
+    $a2.addScore(-1);
+    // !! TODO ONLY FOR DEBUGGING
+    System.out.println("Score based on double bonds order: Scored -1 for annotations: " + $a1 + " and " + $a2);
+end
+*/
